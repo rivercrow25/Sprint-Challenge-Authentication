@@ -1,8 +1,13 @@
-/* 
-  complete the middleware code to check if the user is logged in
-  before granting access to the next middleware/route handler
-*/
+const secret = require('../api/signature')
+const jwt = require('jsonwebtoken')
 
 module.exports = (req, res, next) => {
-  res.status(401).json({ you: 'shall not pass!' });
+  jwt.verify(req.headers.authorization, secret.jwtSecrets, function (err, decoded) {
+    if (err) {
+      res.status(400).json({ error: 'not logged in' })
+    } else {
+      req.token = decoded
+      next()
+    }
+  })
 };
