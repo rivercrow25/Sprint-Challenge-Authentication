@@ -1,6 +1,5 @@
 const request = require('supertest')
-const server = require('./auth-router')
-const first = require('../api/server')
+const server = require('../api/server')
 
 const db = require('../database/dbConfig')
 
@@ -11,7 +10,7 @@ describe('server', () => {
     describe('get /api/jokes', () => {
 
         it('fails', () => {
-            return request(first).get('/')
+            return request(server).get('/')
                 .then(res => {
                     expect(res.status).toBe(404)
                 })
@@ -19,13 +18,20 @@ describe('server', () => {
     })
     describe('post /register', () => {
         it('fails when no info give', async () => {
-
-            request(server).post('/register')
+            request(server).post('/api/auth/register')
                 .then(res => {
                     expect(res.status).toBe(500)
                 })
-            const existing = await db('users')
-            return expect(existing).toHaveLength(0)
+        })
+        it('successfully adds a user to the db', async () => {
+            await request(server).post('/api/auth/register')
+                .send({ username: 'testing', password: 'elbow' })
+                .then(res => {
+                    expect(res.status).toBe(201)
+                })
+
+            const inserted = await db('users')
+            expect(inserted).toHaveLength(1)
         })
     })
 })
